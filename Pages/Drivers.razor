@@ -1,0 +1,95 @@
+﻿@page "/Drivers"
+@using Newtonsoft.Json.Linq;
+@using Microsoft.AspNetCore.Components.Rendering
+@inject Blazored.LocalStorage.ILocalStorageService ls
+@inject HttpClient Http
+
+<div class="justify-content-center justify-content-lg-start">
+
+    <h1>Pilotes</h1>
+
+    <p>Liste des Pilotes.</p>
+</div>
+
+@if (driversList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row col-auto col-lg-4">
+        <input list="drivers" name="driverInput" id="driverInput" class="form-control" @onchange="changeTextUpdate">
+        <datalist id="drivers">
+            @foreach (var driver in driversList)
+            {
+                <option value="@driver" />
+            }
+        </datalist>
+    </div>
+
+    @if (displayDriverFN != "")
+    {
+        <section class="container">
+            <div class="row justify-content-center justify-content-lg-start">
+                <div class="col-auto">
+                    <img src="@displayDriverIMG" alt="img-driver" id="img-driver" />
+                </div>
+                <div class="col-auto col-lg-8 text-center">
+                    <br />
+                    <p>Nom : @displayDriverLN</p><br />
+                    <p>Prénom : @displayDriverFN</p><br />
+                    <p>Age : @displayDriverAge</p><br />
+                    <p>Nationalité : @displayDriverNationality</p>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@code {
+    private Dictionary<String, Driver> driversDic = new Dictionary<String, Driver>();
+    private List<String> driversList = new List<String>();
+    private string displayDriverFN = "";
+    private string displayDriverLN = "";
+    private string displayDriverAge = "";
+    private string displayDriverNationality = "";
+    private string displayDriverIMG = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        string sJSON = "";
+
+        try
+        {
+            sJSON = await Http.GetStringAsync("https://localhost/include/dbQuerrySelectDrivers.php");
+            await ls.SetItemAsync("Drivers", sJSON);
+        }
+        catch
+        {
+            sJSON = await ls.GetItemAsync<String>("Drivers");
+        }
+
+        JArray jsonArray = JArray.Parse(sJSON.ToString());
+
+        foreach (var jso in jsonArray)
+        {
+            driversList.Add(jso["firstN"].ToString() + " " + jso["lastN"].ToString());
+
+            driversDic.Add(jso["firstN"].ToString() + " " + jso["lastN"].ToString(),
+                new Driver(Convert.ToInt32(jso["id"]), jso["lastN"].ToString(), jso["firstN"].ToString(),
+            Convert.ToInt32(jso["age"].ToString()), jso["nationality"].ToString(), jso["img_link"].ToString()));
+        }
+    }
+
+    private void changeTextUpdate(ChangeEventArgs e)
+    {
+        if (driversDic.TryGetValue(e.Value.ToString(), out Driver output))
+        {
+            displayDriverFN = output.firstN;
+            displayDriverLN = output.lastN;
+            displayDriverAge = output.age.ToString();
+            displayDriverNationality = output.nationality;
+            displayDriverIMG = output.img_link;
+        }
+    }
+}

@@ -1,0 +1,78 @@
+﻿@page "/Odds"
+@using Newtonsoft.Json.Linq;
+@using Microsoft.AspNetCore.Components.Rendering
+@inject Blazored.LocalStorage.ILocalStorageService ls
+@inject HttpClient Http
+
+<h1>Cotes</h1>
+
+<p>Les Cotes pour la prochaine course.</p>
+
+@if (driverOddsList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Pilote</th>
+                    <th>Cote</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var driverOdds in driverOddsList)
+                {
+                    <tr>
+                        <td>@{ Count(__builder); }</td>
+                        <td>@driverOdds.driverName</td>
+                        <td>@driverOdds.odds</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<DriverOdds> driverOddsList = new List<DriverOdds>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string sJSON = "";
+
+        try
+        {
+            sJSON = await Http.GetStringAsync("https://localhost/include/dbQuerrySelectOdds.php");
+            await ls.SetItemAsync("Odds", sJSON);
+        }
+        catch
+        {
+            sJSON = await ls.GetItemAsync<String>("Odds");
+        }
+
+        JArray jsonArray = JArray.Parse(sJSON.ToString());
+        double oddsC = 0;
+
+        foreach (var jso in jsonArray)
+        {
+            oddsC = (Convert.ToDouble(jso["AVG_placement"]) + Convert.ToDouble(jso["Momentum"]) + Convert.ToDouble(jso["team_placement"])) / 3;
+            if (oddsC >= 6) { oddsC *= 1.7; }
+
+            driverOddsList.Add(new DriverOdds(jso["driver_FN"] + " " + jso["driver_LN"], oddsC));
+        }
+
+        driverOddsList.Sort(delegate (DriverOdds x, DriverOdds y) { return x.odds.CompareTo(y.odds); });
+    }
+
+    int cpt = 1;
+
+    void Count(RenderTreeBuilder __builder)
+    {
+        @cpt
+        cpt++;
+    }
+}

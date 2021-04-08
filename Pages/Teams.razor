@@ -1,0 +1,91 @@
+﻿@page "/Teams"
+@using Newtonsoft.Json.Linq;
+@using Microsoft.AspNetCore.Components.Rendering
+@inject Blazored.LocalStorage.ILocalStorageService ls
+@inject HttpClient Http
+
+<h1>Équipes</h1>
+
+<p>Liste des Équipes.</p>
+
+@if (teamsList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row col-auto col-lg-4">
+        <input list="teams" name="teamInput" id="teamInput" class="form-control" @onchange="changeTextUpdate">
+        <datalist id="teams">
+            @foreach (var team in teamsList)
+            {
+                <option value="@team" />
+            }
+        </datalist>
+    </div>
+
+    @if (displayTeamName != "")
+    {
+        <section class="container">
+            <div class="row justify-content-center justify-content-lg-start">
+                <div class="col-auto">
+                    <img src="@displayTeamIMG" alt="img-team" id="img-team" />
+                </div>
+                <div class="col-auto col-lg-8 text-center">
+                    <br />
+                    <p>Nom : @displayTeamName</p><br />
+                    <p>Nationalité : @displayTeamNationality</p><br />
+                    <p>Motoriste : @displayTeamEngineSup</p><br />
+                    <p>Directeur : @displayTeamDirectorName</p>
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@code {
+    private Dictionary<String, Team> teamsDic = new Dictionary<String, Team>();
+    private List<String> teamsList = new List<String>();
+    private string displayTeamName = "";
+    private string displayTeamNationality = "";
+    private string displayTeamEngineSup = "";
+    private string displayTeamDirectorName = "";
+    private string displayTeamIMG = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        string sJSON = "";
+
+        try
+        {
+            sJSON = await Http.GetStringAsync("https://localhost/include/dbQuerrySelectTeams.php");
+            await ls.SetItemAsync("Teams", sJSON);
+        }
+        catch
+        {
+            sJSON = await ls.GetItemAsync<String>("Teams");
+        }
+
+        JArray jsonArray = JArray.Parse(sJSON.ToString());
+
+        foreach (var jso in jsonArray)
+        {
+            teamsList.Add(jso["name"].ToString());
+
+            teamsDic.Add(jso["name"].ToString(), new Team(Convert.ToInt32(jso["id"]), jso["name"].ToString(), jso["nationality"].ToString(),
+                jso["engine_sup"].ToString(), jso["director_name"].ToString(), jso["img_link"].ToString()));
+        }
+    }
+
+    private void changeTextUpdate(ChangeEventArgs e)
+    {
+        if (teamsDic.TryGetValue(e.Value.ToString(), out Team output))
+        {
+            displayTeamName = output.name;
+            displayTeamNationality = output.nationality;
+            displayTeamEngineSup = output.engine_sup;
+            displayTeamDirectorName = output.director_name;
+            displayTeamIMG = output.img_link;
+        }
+    }
+}

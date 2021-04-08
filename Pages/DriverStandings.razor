@@ -1,0 +1,64 @@
+﻿@page "/DriverStandings"
+@using Newtonsoft.Json.Linq;
+@using Microsoft.AspNetCore.Components.Rendering
+@inject Blazored.LocalStorage.ILocalStorageService ls
+@inject HttpClient Http
+
+<h1>Classement Pilotes</h1>
+
+<p>Classement actuel des Pilotes</p>
+
+@if (driverStandingsList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Points</th>
+                    <th>Pilote</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var driverStanding in driverStandingsList)
+                {
+                    <tr>
+                        <td>@driverStanding.placement</td>
+                        <td>@driverStanding.points</td>
+                        <td>@driverStanding.driverName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<DriverStanding> driverStandingsList = new List<DriverStanding>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string sJSON = "";
+        
+        try
+        {
+            sJSON = await Http.GetStringAsync("https://localhost/include/dbQuerrySelectDriverStandings.php");
+            await ls.SetItemAsync("DriverStandings", sJSON);
+        }
+        catch
+        {
+            sJSON = await ls.GetItemAsync<String>("DriverStandings");
+        }
+
+        JArray jsonArray = JArray.Parse(sJSON.ToString());
+
+        foreach (var jso in jsonArray)
+        {
+            driverStandingsList.Add(new DriverStanding(Convert.ToInt32(jso["placement"]), Convert.ToInt32(jso["points"]), jso["firstN"] + " " + jso["lastN"]));
+        }
+    }
+}

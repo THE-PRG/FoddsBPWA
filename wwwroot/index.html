@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>FoddsBPWA</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="FoddsBPWA.styles.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="img/icons/icon-512.png" />
+    <link rel="icon" type="image/ico" href="img/icons/f1.ico" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="d-flex flex-row justify-content-center align-items-center" style=" position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <button class="btn btn-dark p-2 btn-lg" type="button" disabled>
+                <span class="spinner-border spinner-border-sm text-light" role="status" aria-hidden="true" style="width: 1.5rem; height: 1.5rem;"></span>
+                Chargement...
+            </button>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register("service-worker.js");</script>
+    <!-- <script>navigator.serviceWorker.register(_.options.serviceWorkerPath, { updateViaCache: 'none' });</script> -->
+</body>
+</html>
