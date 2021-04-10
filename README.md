@@ -1,6 +1,6 @@
 # FoddsBPWA
 
-FoddsBPWA (Formula One Odds Blazor Progressive Web App) is an attempt at a PWA using Blazor Webassembly
+FoddsBPWA (Formula One Odds Blazor Progressive Web App) is an attempt at a PWA using Blazor Webassembly with the goal of providing Formula One related data
 
 A build of the project is available at: https://fodds.alwaysdata.net
 
